@@ -21,7 +21,7 @@ Runs on TIP (needs `epo.tipdata`). Method follows tutorial_4/40_present_value_sc
 Firm names: psn_name -> firm with harmonize_firms.py (rules and justification: docs/harmonize_firms.md).
 
     python src/03_present_score.py                    # parameters from config/sector.yaml
-    python src/03_present_score.py --window 2012 2018 --log-volume   # one-off experiment, config unchanged
+    python src/03_present_score.py --window 2010 2018 --volume linear   # one-off experiment, config unchanged
 """
 from __future__ import annotations
 
@@ -302,13 +302,19 @@ def for_scoring(firms: pd.DataFrame, cfg=CONFIG) -> pd.DataFrame:
 
 
 def robustness(firms: pd.DataFrame, cfg=CONFIG) -> pd.DataFrame:
-    """Rank of each firm under other weights; prints the Spearman correlation with ours."""
-    schemes = {"ours": cfg["weights"], "equal": {k: 1 for k in INDICATORS}}
-    for k in INDICATORS:
-        schemes[f"without {k}"] = {j: 1 for j in INDICATORS if j != k}
+    """Rank of each firm under other choices (each indicator dropped, the other method, the other volume scale);
+    prints the Spearman correlation with ours."""
+    rank = lambda s: s.rank(ascending=False, method="min")
     table = for_scoring(firms, cfg)
-    ranks = pd.DataFrame({name: combine(table, w, cfg["method"]).rank(ascending=False, method="min")
-                          for name, w in schemes.items()}).astype(int)
+    ranks = {"ours": rank(combine(table, cfg["weights"], cfg["method"]))}
+    for k in INDICATORS:
+        ranks[f"without {k}"] = rank(combine(table, {j: 1 for j in INDICATORS if j != k}, cfg["method"]))
+    other = "rrf" if cfg["method"] == "mean" else "mean"
+    ranks[f"method {other}"] = rank(combine(table, cfg["weights"], other))
+    flipped = {**cfg, "log_volume": not cfg.get("log_volume")}
+    ranks[f"{'linear' if cfg.get('log_volume') else 'log'} volume"] = rank(
+        combine(for_scoring(firms, flipped), cfg["weights"], cfg["method"]))
+    ranks = pd.DataFrame(ranks).astype(int)
     print("Spearman correlation with our ranking (1 = same order):")
     print(ranks.corr(method="spearman")["ours"].drop("ours").round(2).to_string())
     return ranks
@@ -349,13 +355,13 @@ if __name__ == "__main__":
     parser.add_argument("--citation-window", type=int,
                         help="years of forward citations counted (shorter = recent families can be scored)")
     parser.add_argument("--min-families", type=int)
-    parser.add_argument("--log-volume", action="store_true", help="volume enters the score as log(families)")
+    parser.add_argument("--volume", choices=["log", "linear"], help="scale of volume in the score")
     args = parser.parse_args()
 
     cfg = build_config(args.config)
     overrides = {"input_csv": args.input, "firms_csv": args.firms, "env": args.env, "method": args.method,
                  "window": tuple(args.window) if args.window else None, "min_families": args.min_families,
-                 "citation_window": args.citation_window, "log_volume": True if args.log_volume else None}
+                 "citation_window": args.citation_window, "log_volume": None if args.volume is None else args.volume == "log"}
     cfg.update({k: v for k, v in overrides.items() if v is not None})
     if args.success_offices:
         cfg["success_offices"] = None if args.success_offices == "all" else tuple(args.success_offices.split(","))

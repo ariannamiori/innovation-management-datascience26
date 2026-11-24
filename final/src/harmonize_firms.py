@@ -12,6 +12,7 @@ deterministic, and every merge records its evidence in firm_map.csv.
                     Group name = the firm's name without organisational words at the end and "CHINA" at the start
                     ("CHINA HUANENG GROUP CORPORATION" -> "HUANENG"); it needs one distinctive word. A name that
                     also contains another firm's group name is a possible joint venture and is left apart.
+    5. manual       MANUAL_MERGES: the one case the names cannot show that we checked by hand (see the .md)
 
 Input   outputs/tables/firm_names.csv (export_firm_names.py) · ../tutorial_1/PATSTAT_500_label_datav4.csv (gold standard)
 Output  outputs/tables/firm_map.csv (one row per psn_name) · outputs/tables/firm_list.csv (one row per firm)
@@ -32,6 +33,14 @@ ROOT = Path(__file__).resolve().parents[1]        # final/
 NAMES_CSV = ROOT / "outputs/tables/firm_names.csv"
 GOLD_CSV = ROOT.parent / "tutorial_1/PATSTAT_500_label_datav4.csv"
 OUT = ROOT / "outputs/tables"
+
+# Firms (labels from steps 1-4) that are one company although no name shows it. Found in the Step 3 ranking,
+# where LS Electric appeared three times; each merge cites its source.
+MANUAL_MERGES = {
+    "LS ELECTRIC": (["LSIS", "LS", "LS ELECTRIC"],     # LSIS = LS Industrial Systems; LS产电 / LS电气 = its Chinese names
+                    "renamed LS ELECTRIC on 24 Mar 2020, The Asia Business Daily: "
+                    "https://view.asiae.co.kr/en/article/2020032410135513971"),
+}
 
 LEGAL_FORMS = {                                   # tutorial 1, method A (+ KGAA)
     "INC", "INCORPORATED", "CORP", "CORPORATION", "CO", "COMPANY", "LTD", "LIMITED", "LLC", "LP", "PLC", "GMBH",
@@ -206,6 +215,14 @@ def build_map(names: pd.DataFrame) -> pd.DataFrame:
         hs = [heads[m] for m in ms if m in heads]
         name = " ".join(min(hs, key=lambda g: (len(g), g))) if hs else key[max(ms, key=lambda m: (fam[m], m.isascii(), m))]
         label.update({m: name for m in ms})
+
+    # 5 · manual merges, each with its source
+    for firm, (labels, source) in MANUAL_MERGES.items():
+        for n in psn:
+            if label[n] in labels:
+                if label[n] != firm:
+                    evidence[n] = ("5 manual", f"merged with '{firm}': {source}")
+                label[n] = firm
     return pd.DataFrame({
         "psn_name": psn, "firm": [label[n] for n in psn], "families": [fam[n] for n in psn],
         "step": [evidence.get(n, ("0 kept", ""))[0] for n in psn],
