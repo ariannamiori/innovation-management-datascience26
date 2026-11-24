@@ -16,13 +16,21 @@ The map merges two names only when the data shows they belong together. We start
 | 2 · Variant | same first word and length; the other words equal or abbreviated | *DOOSAN HEAVY IND.* = *DOOSAN HEAVY INDUSTRIES* | 8 |
 | 3 · Shared id | same HAN or DOCDB id **and** one name begins with the other (the id alone links e.g. Toshiba and Denso) | *GS YUASA* = *GS YUASA INTERNATIONAL* | 3 |
 | 4 · Group name | the name contains another firm's group name: at the start of a part of the name, after a place word, or after "OF" | *NANJING POWER SUPPLY BRANCH OF STATE GRID JIANGSU …* → State Grid | 395 |
-| 5 · Manual | one merge checked by hand, with its source (below) | *LSIS*, *LS产电株式会社* → LS ELECTRIC | 4 |
+| 5 · Manual | three merges checked by hand, each with its source (below) | *LSIS*, *LS产电株式会社* → LS ELECTRIC | 6 |
 
 **The group name** of a firm is its name without organisational words at the end and without "CHINA" at the start: *CHINA HUANENG GROUP CORPORATION* gives *HUANENG*. It must contain a distinctive word, i.e. not only legal, sector or place words (the word lists are in the code). A name that also contains another firm's group name is a possible joint venture and is left apart, e.g. *TOSHIBA MITSUBISHI-ELECTRIC*.
 
-Result: 1,912 names become 1,493 firms.
+Result: 1,912 names become 1,491 firms.
 
-**The manual merge (Step 5).** The Step 3 ranking listed LS Electric three times: as *LSIS* (27 families), as *LS* (its filings under the Chinese names *LS产电* and *LS电气*, 9) and as *LS ELECTRIC* (9). Research showed they are one company. LS Industrial Systems (English name LSIS, Korean *LS 산전*, Chinese *LS产电*) adopted the name LS ELECTRIC (LS Electric Co., Ltd.) at its 46th regular shareholders' meeting on 24 March 2020 ([The Asia Business Daily, 24 Mar 2020](https://view.asiae.co.kr/en/article/2020032410135513971)). A rename leaves no trace in the names, so no rule of Steps 1–4 can find it. The merge is written in `MANUAL_MERGES` in the code, with its source, and `firm_map.csv` records the source for each name it moved.
+**The manual merges (Step 5).** Steps 1–4 cannot see a rename or a name written only in Chinese or Japanese. Three such cases surfaced in the Step 3 ranking, where the same company appeared more than once. We checked each one and merged it:
+
+| Firm | Names merged | Evidence |
+|---|---|---|
+| LS ELECTRIC | *LSIS COMPANY*; the Chinese *LS产电株式会社*, *LS 产电株式会社*, *LS电气株式会社*; *LS ELECTRIC* | LS Industrial Systems (English name LSIS, Korean *LS 산전*, Chinese *LS产电*) adopted the name LS ELECTRIC at its 46th regular shareholders' meeting on 24 March 2020 ([The Asia Business Daily, 24 Mar 2020](https://view.asiae.co.kr/en/article/2020032410135513971)) |
+| ROBERT BOSCH | *罗伯特·博世有限公司*; *ROBERT BOSCH* | the Chinese name of Robert Bosch GmbH, as written in Bosch's own brochure *Bosch in China 2011–2012* ([PDF](https://kjc.seu.edu.cn/_upload/article/a6/15/fb4887a84546a850d67c75442af5/4eaecf58-b0e6-456a-bbdf-bbbc00202666.pdf)) |
+| GS YUASA | *株式会社ＧＳユアサ*; *GS YUASA*, *GS YUASA INTERNATIONAL* | the legal name of GS Yuasa International Ltd. in its Legal Entity Identifier record ([LEI 353800V9KZ28MPO9AX95](https://lei.bloomberg.com/leis/view/353800V9KZ28MPO9AX95)) |
+
+The remaining names written only in Chinese or Japanese have fewer families in the scoring window than the threshold (`min_families` = 5), so they cannot enter the ranking. The merges are written in `MANUAL_MERGES` in the code, and `firm_map.csv` records the source for each name moved.
 
 ## Validation
 
@@ -37,9 +45,4 @@ We tested the method on the gold standard of tutorial 1 (3,192 names in 481 orga
 
 ## Limitations
 
-**This is the closest we could get without a paid ownership database.** The method sees only names, so it cannot merge ownership that no name shows:
-- Sanyo is part of Panasonic;
-- NARI belongs to State Grid;
-- Guangdong Power Grid belongs to China Southern Power Grid.
-
-Nor can it read names written only in Chinese or Japanese (19 names, about 45 families). Name evidence also follows brands rather than owners: *SIEMENS ENERGY* is merged with Siemens, although it was spun off in 2020. Fixing these cases needs ownership data such as Orbis (global ultimate owner).
+**This is the closest we could get without a paid ownership database.** The method sees only names, so it cannot merge ownership that no name shows.

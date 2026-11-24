@@ -75,8 +75,9 @@ The present score ranks the sector's main firms by the value of their patents to
 | Run | Settings | Families in window | Firms scored | What we saw |
 |---|---|---:|---:|---|
 | 1 | 2010–2018, success on EP, min 10, linear volume | 924 | 6 | Only 13 % of the families fall in the window, because the sector grew after 2019. Only 5 % of families have an EP filing, so success rested on 0–22 decisions: State Grid had none, LSIS had 0 of 6. Without volume, the ranking correlates only 0.60 with ours. |
-| 2 | 2010–2019, all offices, min 5, linear volume | 1,162 | 15 | Success now rests on 8–185 decisions per firm. State Grid scored 261, about 190 points of it from volume. LS Electric appeared three times, which led to the manual merge in the firm map (`docs/harmonize_firms.md`). |
-| 3 (current) | run 2 + log volume + LS merge | 1,162 | 15 | Recomputed from the run-2 indicators: State Grid moves from 1st to 4th, the other ranks barely move, and the order of ranks 5–15 is the same under the mean, log-volume and rrf versions. |
+| 2 | 2010–2019, all offices, min 5, linear volume | 1,162 | 15 | Success now rests on 8–185 decisions per firm. State Grid scored 261, about 190 points of it from volume. LS Electric appeared three times, which led to a manual merge in the firm map (`docs/harmonize_firms.md`). |
+| 3 | run 2 + log volume + LS merge | 1,162 | 15 | Samsung SDI 1st, Kobe Steel 2nd, State Grid 3rd (120 points instead of 261); LS ELECTRIC is one firm (30 families, 6th). The ranking is robust: Spearman 0.83–0.98 against every variant (without each indicator, rrf, linear volume). Bosch now appeared twice (its Chinese name at 4th), which led to the Bosch and GS Yuasa merges. |
+| 4 (current) | run 3 + Bosch and GS Yuasa merges | 1,162 | 15 | to run |
 
 ## Outputs
 
@@ -106,7 +107,7 @@ The run prints the Spearman correlation of each with our ranking.
 
 - **Relative scores.** The score is relative to the scored set: adding or removing a firm moves everyone's baseline of 100.
 - **Success across offices.** Success at all offices mixes the grant practices of different offices. EP alone would be one standard, but it covers only 5 % of this sector.
-- **Firm map.** The firm map sees only names, apart from the one sourced manual merge. NARI (State Grid) and Xuji (China Electrical Equipment Group) are scored as separate firms (`docs/harmonize_firms.md`).
+- **Firm map.** The firm map sees only names, apart from three sourced manual merges. Subsidiaries whose names do not show their owner are scored as separate firms: NARI (State Grid), Xuji (China Electrical Equipment Group), Guizhou Power Grid (China Southern Power Grid) (`docs/harmonize_firms.md`).
 - **Recent families.** Families first published after 2020 have no complete citation window. They count for volume, success and globalization, but not for influence.
 
 ## How to run

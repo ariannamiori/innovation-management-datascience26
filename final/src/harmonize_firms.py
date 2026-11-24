@@ -34,12 +34,19 @@ NAMES_CSV = ROOT / "outputs/tables/firm_names.csv"
 GOLD_CSV = ROOT.parent / "tutorial_1/PATSTAT_500_label_datav4.csv"
 OUT = ROOT / "outputs/tables"
 
-# Firms (labels from steps 1-4) that are one company although no name shows it. Found in the Step 3 ranking,
-# where LS Electric appeared three times; each merge cites its source.
+# Firms (labels from steps 1-4) that are one company although no name shows it: a rename, or a name written only
+# in Chinese or Japanese. Found in the Step 3 ranking, where these companies appeared more than once (all the other
+# non-Latin names have fewer families than the scoring threshold). Each merge cites its source.
 MANUAL_MERGES = {
     "LS ELECTRIC": (["LSIS", "LS", "LS ELECTRIC"],     # LSIS = LS Industrial Systems; LS产电 / LS电气 = its Chinese names
                     "renamed LS ELECTRIC on 24 Mar 2020, The Asia Business Daily: "
                     "https://view.asiae.co.kr/en/article/2020032410135513971"),
+    "ROBERT BOSCH": (["ROBERT BOSCH", "罗伯特·博世有限公司"],
+                     "Chinese name of Robert Bosch GmbH, brochure 'Bosch in China' 2011-2012: "
+                     "https://kjc.seu.edu.cn/_upload/article/a6/15/fb4887a84546a850d67c75442af5/4eaecf58-b0e6-456a-bbdf-bbbc00202666.pdf"),
+    "GS YUASA": (["GS YUASA", "GS"],                   # GS = the Latin letters of 株式会社ＧＳユアサ
+                 "legal name of GS Yuasa International Ltd., LEI 353800V9KZ28MPO9AX95: "
+                 "https://lei.bloomberg.com/leis/view/353800V9KZ28MPO9AX95"),
 }
 
 LEGAL_FORMS = {                                   # tutorial 1, method A (+ KGAA)
