@@ -1,0 +1,11 @@
+# Pin the exact versions before submission: run `pip freeze` on TIP and copy the versions of these packages.
+# epo.tipdata (PATSTAT client) is preinstalled on TIP and is not on PyPI.
+pandas
+numpy
+sqlalchemy
+pyyaml
+cleanco
+matplotlib
+scikit-learn
+sentence-transformers
+pytest

@@ -1,0 +1,57 @@
+# Team 27 · Utility-scale energy storage · client Enel
+# One place for every design choice of the pipeline (kickoff: "config, not hard-coding").
+# Every value is a decision to justify in the technical appendix.
+
+sector: Utility-scale energy storage
+client: Enel
+team: 27
+
+patstat:
+  env: PROD            # TEST to develop (fast, small), PROD for the final numbers
+  chunk: 5000          # ids per IN (...) query
+
+# Step 0 output, read by every later step (one column is required: docdb_family_id)
+families_csv: data/families.csv          # today: utility_scale_storage_reviewed_adaptive_v4.csv (6,838 families)
+
+years:
+  first: 2000                # first priority year described
+  last_complete: 2023        # later priority years are truncated (18-month publication lag): flag, do not read as decline
+                             # (latest publication in PROD on 2026-11-24: 2026-08-21)
+
+names:                       # applicant harmonisation (src/harmonize_firms.py, docs/harmonize_firms.md)
+  companies_only: true       # psn_sector contains COMPANY
+
+description:                 # Step 1
+  growth_window: [2010, 2023]
+  top_cpc: 10
+
+competition:                 # Step 2
+  concentration_window: 3    # years per rolling window for HHI / CR4
+  entrant_split_year: 2018   # first sector family from this year on = entrant
+  n_firms_to_score: 15       # size of the shortlist passed to Steps 3-4
+  min_families: 10
+
+present_score:               # Step 3 · src/03_present_score.py (also uses competition.n_firms_to_score / min_families)
+  firms_csv: outputs/tables/firms_to_score.csv   # Step 2 shortlist; while it does not exist: the largest portfolios
+  output_csv: outputs/tables/present_scores.csv  # + present_scores_robustness.csv next to it
+  window: [2010, 2018]       # priority years scored: old enough to be decided and cited
+  last_citation_year: 2025   # last year of citations in the PATSTAT edition
+  citation_window: 5         # forward citations counted within N years of first publication
+  min_cohort: 5              # CPC-subclass x year cohorts smaller than this use the year mean
+  keep_ipr: [PI]             # patents of invention only (no utility models, no designs)
+  ep_only: false             # true: only families with at least one EP application (as tutorial 4)
+  success_offices: [EP]      # offices whose decisions count for Success; null = all national offices
+  log_volume: false          # true: volume enters as log(families), so one giant cannot dominate. Team decision pending
+  weights: {volume: 0.25, influence: 0.25, success: 0.25, globalization: 0.25}
+  method: mean               # mean (100 = average firm) or rrf (reciprocal rank fusion)
+
+future_score:                # Step 4
+  publication_years: [2025, 2026]   # "the last 1-2 years of published applications"
+  backtest_freeze_year: 2015        # compute the score with data up to T only...
+  backtest_outcome_years: 5         # ...and compare with what happened in the next N years
+
+quadrant:                    # Step 5
+  split: median              # where the axes are cut: median of the scored firms (or 100 = average)
+
+recommendation:              # Step 6
+  firm: null                 # the firm picked from the quadrant
