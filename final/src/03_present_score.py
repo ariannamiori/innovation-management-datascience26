@@ -130,7 +130,6 @@ def _fetch(patstat, db, func, family_ids, env, TLS201_APPLN, TLS206_PERSON, TLS2
     # applicants (applt_seq_nr > 0), with standardised name and sector
     owners = run(lambda c: db.query(
         TLS207_PERS_APPLN.appln_id, TLS206_PERSON.psn_name, TLS206_PERSON.psn_sector,
-        TLS206_PERSON.han_name,
     ).join(TLS206_PERSON, TLS206_PERSON.person_id == TLS207_PERS_APPLN.person_id)
      .filter(TLS207_PERS_APPLN.applt_seq_nr > 0)
      .filter(TLS207_PERS_APPLN.appln_id.in_(c)), appln_ids)
@@ -236,13 +235,7 @@ def compute_indicators(apps, cpc, owners, cites, cfg=CONFIG) -> pd.DataFrame:
     own = owners.merge(apps[["appln_id", "docdb_family_id"]], on="appln_id")
     own = own[own.psn_sector.fillna("").str.contains("COMPANY")].copy()
     own["psn_name"] = own.psn_name.str.strip()
-    own["firm"] = own.psn_name.map(firm_of)
-    own["han_name"] = own.han_name.fillna("").str.strip()
-    n_names = own.groupby("firm").psn_name.nunique()
-    merged = (own[own.firm.map(n_names) > 1]
-              .groupby(["firm", "psn_name", "han_name"]).docdb_family_id.nunique())
-    if len(merged):
-        print("Names merged into a firm (check them, full list: outputs/tables/firm_map.csv):\n" + merged.to_string())
+    own["firm"] = own.psn_name.map(firm_of)                    # harmonisation: src/harmonize_firms.py
     fam_firm = own[["docdb_family_id", "firm"]].drop_duplicates()
 
     n_families = fam_firm.groupby("firm").docdb_family_id.nunique().sort_values(ascending=False)
